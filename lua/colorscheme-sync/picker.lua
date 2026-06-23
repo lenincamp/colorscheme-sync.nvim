@@ -9,10 +9,9 @@ function M.select(items, on_select)
   end
 
   local ok_picker, picker = pcall(require, "picker")
-  if ok_picker and type(picker.pick) == "function" then
-    picker.pick(selectable, {
+  if ok_picker and type(picker.select_items) == "function" then
+    picker.select_items(selectable, {
       prompt = "Colorscheme",
-      scope = "global",
       format_item = function(item)
         return "★ " .. item.label
       end,
