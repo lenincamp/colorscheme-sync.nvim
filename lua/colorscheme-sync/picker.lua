@@ -12,6 +12,7 @@ function M.select(items, on_select)
   if ok_picker and type(picker.select_items) == "function" then
     picker.select_items(selectable, {
       prompt = "Colorscheme",
+      input_mode = true,
       format_item = function(item)
         return "★ " .. item.label
       end,
