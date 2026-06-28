@@ -25,12 +25,19 @@ function M.apply(theme, opts)
   end
 
   local ok, err = pcall(vim.cmd.colorscheme, item.scheme)
-  if not ok then
+  -- A third-party ColorScheme autocmd (e.g. Neovim core's lsp document_color,
+  -- which asserts on a stale LSP client) can throw even when the scheme itself
+  -- loaded fine. Treat the scheme as applied if colors_name actually changed.
+  local loaded = vim.g.colors_name == item.scheme
+  if not ok and not loaded then
     vim.g.pure_colorscheme = previous_key
     vim.g.transparent_background = transparency_pref
     vim.g._csync_applying = false
     vim.notify("Colorscheme failed [" .. item.scheme .. "]: " .. tostring(err), vim.log.levels.WARN)
     return false
+  end
+  if not ok then
+    vim.notify("Colorscheme autocmd error [" .. item.scheme .. "]: " .. tostring(err), vim.log.levels.DEBUG)
   end
 
   vim.g.transparent_background = transparency_pref

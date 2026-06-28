@@ -84,5 +84,19 @@ do
   assert_true(colors.bg ~= nil, "build light has bg")
 end
 
+-- Test build recovers the captured theme bg when Normal.bg is stripped (transparency)
+do
+  local transparency = require("colorscheme-sync.transparency")
+  vim.o.background = "dark"
+  vim.g.transparent_background = true
+  vim.g._csync_theme_bg = nil
+  vim.api.nvim_set_hl(0, "Normal", { fg = "#cdd6f4", bg = "#282828" })
+  vim.api.nvim_set_hl(0, "Pmenu", {})
+  vim.api.nvim_set_hl(0, "NormalFloat", {})
+  transparency.apply({ "Normal" })
+  assert_eq(vim.g._csync_theme_bg, "#282828", "transparency.apply captures theme bg before strip")
+  assert_eq(palette.build("dark").bg, "#282828", "build recovers captured theme bg when Normal stripped")
+end
+
 print(string.format("\ntest_palette: %d passed, %d failed", pass, fail))
 if fail > 0 then os.exit(1) end

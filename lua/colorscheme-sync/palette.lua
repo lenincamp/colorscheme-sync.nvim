@@ -84,11 +84,12 @@ function M.build(mode)
   local raw_bg = first_hex(normal.bg)
   local bg_color
   if not raw_bg or raw_bg == "#000000" then
-    bg_color = dark and "#1e1e2e" or "#eff1f5"
-    local pmenu_bg = first_hl_bg({ "Pmenu", "NormalFloat" })
-    if pmenu_bg and pmenu_bg ~= "#000000" then
-      bg_color = pmenu_bg
-    end
+    -- Normal.bg is unset (transparency strips it). Recover the theme bg captured
+    -- before stripping, then fall back to popup surfaces / mode defaults.
+    local captured = type(vim.g._csync_theme_bg) == "string" and vim.g._csync_theme_bg or nil
+    bg_color = (captured and captured ~= "#000000" and captured)
+      or first_hl_bg({ "Pmenu", "NormalFloat" })
+      or (dark and "#1e1e2e" or "#eff1f5")
   else
     bg_color = raw_bg
   end

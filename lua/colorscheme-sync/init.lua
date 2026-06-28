@@ -35,6 +35,12 @@ function M.setup(opts)
   end
 
   M._setup_autocmds()
+
+  -- Theme-aware opaque popups + Avante recolor. Registered as ColorScheme
+  -- callbacks so they track every theme switch.
+  require("colorscheme-sync.popups").setup()
+  require("colorscheme-sync.integrations.avante").setup()
+
   M._initialized = true
 end
 

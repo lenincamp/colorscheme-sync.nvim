@@ -35,11 +35,15 @@ M.aliases = {
   cyberdream = "cyberdream",
 }
 
+-- Editor chrome stays transparent. Floating windows and popup menus are
+-- intentionally excluded: colorscheme-sync.popups owns their surface and honors
+-- the transparency toggle itself (transparent -> bg NONE, opaque -> elevated),
+-- so it must not be double-stripped here.
 M.transparent_groups = {
-  "Normal", "NormalNC", "NormalFloat", "FloatBorder", "FloatTitle",
-  "SignColumn", "FoldColumn", "LineNr", "CursorLineNr", "StatusLine",
-  "StatusLineNC", "TabLine", "TabLineFill", "WinBar", "WinBarNC",
-  "WinSeparator", "Pmenu", "PmenuBorder", "TelescopeNormal", "TelescopeBorder",
+  "Normal", "NormalNC",
+  "SignColumn", "FoldColumn", "LineNr", "CursorLineNr",
+  "TabLine", "TabLineFill", "WinBar", "WinBarNC",
+  "WinSeparator",
 }
 
 M.sync_profiles = {

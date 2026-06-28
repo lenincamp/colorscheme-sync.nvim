@@ -35,6 +35,7 @@ function M.catppuccin(opts)
       properties = {},
     },
     integrations = {
+      avante = true,
       blink_cmp = true,
       dap = true,
       gitsigns = true,
@@ -62,9 +63,11 @@ function M.catppuccin(opts)
     },
     highlight_overrides = {
       all = function(cp)
+        -- NormalFloat / FloatBorder / Pmenu* are intentionally NOT set here:
+        -- colorscheme-sync.popups owns the opaque popup/float surface so the
+        -- behaviour is identical across every theme. Setting them here would
+        -- fight that single source of truth.
         return {
-          NormalFloat = { fg = cp.text, bg = cp.none },
-          FloatBorder = { fg = cp.blue, bg = cp.none },
           CursorLineNr = { fg = cp.green },
           DiagnosticVirtualTextError = { bg = cp.none },
           DiagnosticVirtualTextWarn = { bg = cp.none },
@@ -72,9 +75,6 @@ function M.catppuccin(opts)
           DiagnosticVirtualTextHint = { bg = cp.none },
           LspInfoBorder = { link = "FloatBorder" },
           MasonNormal = { link = "NormalFloat" },
-          Pmenu = { fg = cp.overlay2, bg = cp.none },
-          PmenuBorder = { fg = cp.surface1, bg = cp.none },
-          PmenuSel = { bg = cp.green, fg = cp.base },
           NotifyBackground = { bg = cp.none },
           DapBreakpoint = { fg = cp.red, bg = cp.none },
           DapBreakpointCondition = { fg = cp.peach, bg = cp.none },
@@ -82,8 +82,6 @@ function M.catppuccin(opts)
           DapStopped = { fg = cp.green, bg = cp.none },
           DapStoppedLine = { bg = cp.surface0 },
           DapBreakpointRejected = { fg = cp.overlay0, bg = cp.none },
-          StatusLine = { fg = cp.surface1, bg = cp.none, reverse = false },
-          StatusLineNC = { fg = cp.surface0, bg = cp.none, reverse = false },
           WinBar = { fg = cp.overlay2, bg = cp.none },
           WinBarNC = { fg = cp.surface2, bg = cp.none },
           WinBarIcon = { fg = cp.blue, bg = cp.none },
@@ -129,8 +127,6 @@ function M.gruvbox(opts)
       NormalFloat = { bg = "none" },
       FloatBorder = { bg = "none" },
       SignColumn = { bg = "none" },
-      StatusLine = { bg = "none" },
-      StatusLineNC = { bg = "none" },
     } or {},
     dim_inactive = false,
     transparent_mode = transparent,
@@ -160,8 +156,6 @@ function M.tokyonight(opts)
       hl.NormalFloat = { bg = "none" }
       hl.FloatBorder = { bg = "none" }
       hl.SignColumn = { bg = "none" }
-      hl.StatusLine = { bg = "none" }
-      hl.StatusLineNC = { bg = "none" }
     end,
   })
 end
@@ -187,8 +181,6 @@ function M.kanagawa(opts)
         NormalFloat = { bg = "none" },
         FloatBorder = { fg = t.ui.float.fg_border, bg = "none" },
         SignColumn = { bg = "none" },
-        StatusLine = { bg = "none" },
-        StatusLineNC = { bg = "none" },
       }
     end,
   })
@@ -212,8 +204,6 @@ M["rose-pine"] = function(opts)
       NormalFloat = { bg = "none" },
       FloatBorder = { bg = "none" },
       SignColumn = { bg = "none" },
-      StatusLine = { bg = "none" },
-      StatusLineNC = { bg = "none" },
     } or {},
   })
 end
@@ -241,8 +231,6 @@ M["solarized-osaka"] = function(opts)
       hl.NormalFloat = { bg = "none" }
       hl.FloatBorder = { bg = "none" }
       hl.SignColumn = { bg = "none" }
-      hl.StatusLine = { bg = "none" }
-      hl.StatusLineNC = { bg = "none" }
     end,
   })
 end
