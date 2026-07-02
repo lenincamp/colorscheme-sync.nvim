@@ -10,7 +10,7 @@ function M.apply(theme, opts)
   opts = opts or {}
   if vim.g._csync_applying then return false end
 
-  local item = catalog.resolve(theme)
+  local item = type(theme) == "table" and theme or catalog.resolve_any(theme)
   local cfg = config.get()
   local previous_key = vim.g.pure_colorscheme
   local item_bg = (item.opts and item.opts.background) or "dark"
@@ -68,26 +68,21 @@ function M.toggle_background()
 end
 
 function M.set_background_mode(mode, opts)
-  local current = catalog.resolve(vim.g.pure_colorscheme or vim.g.colors_name or config.get().default)
+  local current = catalog.resolve_any(vim.g.pure_colorscheme or vim.g.colors_name or config.get().default)
   local current_mode = (current.opts and current.opts.background) or "dark"
 
   if current.fixed_background and mode ~= current_mode then
     return false
   end
 
-  local target = catalog.find_family_variant(current, mode)
-  if target then
-    return M.apply(target, opts)
+  if current_mode == mode then
+    return false
   end
 
-  local fallback = {
-    key = current.key .. "-" .. mode,
-    label = current.label,
-    scheme = current.scheme,
-    plugin = current.plugin,
+  local new_theme = vim.tbl_extend("force", {}, current, {
     opts = vim.tbl_extend("force", {}, current.opts or {}, { background = mode }),
-  }
-  return M.apply(fallback, opts)
+  })
+  return M.apply(new_theme, opts)
 end
 
 return M

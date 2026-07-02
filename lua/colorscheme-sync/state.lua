@@ -1,6 +1,6 @@
 local M = {}
 
-function M.load(path, aliases, theme_map)
+function M.load(path)
   if vim.fn.filereadable(path) ~= 1 then return nil end
 
   local ok_read, lines = pcall(vim.fn.readfile, path)
@@ -13,10 +13,7 @@ function M.load(path, aliases, theme_map)
 
   local key = data.key
   if type(key) == "string" and key ~= "" then
-    key = (aliases or {})[key] or key
-    if theme_map[key] then
-      result.key = key
-    end
+    result.key = key
   end
 
   local transparent = data.transparent

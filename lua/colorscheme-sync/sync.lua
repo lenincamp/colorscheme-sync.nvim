@@ -47,9 +47,36 @@ function M.force(theme)
   M._run_tools(theme, tools)
 end
 
+--- Build a fallback profile from palette colors for themes without explicit config.
+---@param theme table Theme item
+---@return table profile
+local function dynamic_profile(theme)
+  local palette = require("colorscheme-sync.palette")
+  local mode = "dark"
+  if type(theme) == "table" and theme.opts and theme.opts.background then
+    mode = theme.opts.background
+  else
+    mode = vim.o.background or "dark"
+  end
+  local colors = palette.build(mode)
+  return {
+    terminal = { background = colors.bg, foreground = colors.fg },
+    accent = colors.accent,
+    border = colors.border,
+    selection = colors.selection,
+    warn = colors.warn,
+    error = colors.error,
+    lualine = { provider = "auto" },
+  }
+end
+
 function M._run_tools(theme, tools)
   local cfg = config.get()
-  local profile = cfg.sync_profiles[(type(theme) == "table" and theme.key) or theme] or {}
+  local theme_key = (type(theme) == "table" and theme.key) or theme
+  local profile = cfg.sync_profiles[theme_key]
+  if not profile or next(profile) == nil then
+    profile = dynamic_profile(theme)
+  end
   local ctx = {
     theme = theme,
     profile = profile,

@@ -49,13 +49,12 @@ local reenter_ok = apply.apply("habamax", { notify = false })
 t.eq(false, reenter_ok, "apply returns false during reentrancy")
 vim.g._csync_applying = false
 
--- TEST: toggle_background switches dark/light within family
+-- TEST: toggle_background switches dark/light
 vim.g.transparent_background = false
 apply.apply("default-dark", { notify = false })
 t.eq("dark", vim.o.background, "starts dark")
 apply.toggle_background()
 t.eq("light", vim.o.background, "toggles to light")
-t.eq("default-light", vim.g.pure_colorscheme, "toggles to light variant")
 
 -- TEST: toggle_background blocked for fixed_background
 apply.apply("habamax", { notify = false })

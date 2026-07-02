@@ -2,13 +2,15 @@
 
 Neovim plugin for colorscheme management, persistence, system dark/light sync, and external tool synchronization.
 
+Works with **any** Neovim colorscheme — no curated list required.
+
 ## Features
 
+- **Universal**: Any `:colorscheme name` works automatically — extracts palette from highlight groups
 - **Persistence**: Saves your last colorscheme choice to `stdpath("state")/colorscheme.json`
 - **System sync**: Automatically detects macOS dark/light mode changes and switches between theme variants
-- **External tools**: Syncs theme to tmux, alacritty, delta, iTerm2, lazygit, and custom tools
+- **External tools**: Syncs colors to tmux, alacritty, delta, iTerm2, lazygit, starship, eza, btop, zellij, lazydocker, and custom tools
 - **Transparency**: Manages background transparency across highlight groups
-- **Family variants**: Automatically switches between dark/light variants within the same theme family
 - **Extensible**: Add custom sync tools via simple callback functions
 
 ## Installation
@@ -23,38 +25,17 @@ Neovim plugin for colorscheme management, persistence, system dark/light sync, a
     local tools = require("colorscheme-sync.tools")
     require("colorscheme-sync").setup({
       default = "catppuccin-mocha",
-      themes = {
-        { key = "catppuccin-mocha", label = "Catppuccin Mocha", scheme = "catppuccin", plugin = "catppuccin", opts = { flavour = "mocha", background = "dark" } },
-        { key = "catppuccin-latte", label = "Catppuccin Latte", scheme = "catppuccin", plugin = "catppuccin", opts = { flavour = "latte", background = "light" } },
-        { key = "gruvbox-hard", label = "Gruvbox Hard", scheme = "gruvbox", plugin = "gruvbox", opts = { contrast = "hard", background = "dark" } },
-        { key = "gruvbox-light", label = "Gruvbox Light", scheme = "gruvbox", plugin = "gruvbox", opts = { contrast = "soft", background = "light" } },
-      },
-      aliases = {
-        catppuccin = "catppuccin-mocha",
-        gruvbox = "gruvbox-hard",
-      },
-      sync_profiles = {
-        ["catppuccin-mocha"] = { tmux = "mocha", delta = "catppuccin-mocha", iterm2 = "Catppuccin Mocha", terminal = { background = "#1e1e2e", foreground = "#cdd6f4" } },
-        ["catppuccin-latte"] = { tmux = "latte", delta = "catppuccin-latte", iterm2 = "Catppuccin Latte", terminal = { background = "#eff1f5", foreground = "#4c4f69" } },
-        ["gruvbox-hard"] = { tmux = "gruvbox", delta = "gruvbox-dark", terminal = { background = "#1d2021", foreground = "#ebdbb2" } },
-        ["gruvbox-light"] = { tmux = "gruvbox-light", delta = "gruvbox-light", terminal = { background = "#fbf1c7", foreground = "#3c3836" } },
-      },
-      sync_tools = { tools.tmux, tools.delta, tools.alacritty, tools.shell_env, tools.iterm2 },
+      sync_tools = { tools.tmux, tools.delta, tools.alacritty, tools.iterm2, tools.shell_env },
       system_sync = true,
-      system_poll_ms = 8000,
-      on_change = function(item)
-        -- reload lualine, statusline, etc.
-      end,
     })
   end,
 }
 ```
 
-### Manual / packadd
+### Minimal (zero config)
 
 ```lua
-vim.cmd.packadd("colorscheme-sync.nvim")
-require("colorscheme-sync").setup({ ... })
+{ "lcampoverde/colorscheme-sync.nvim", lazy = false, config = true }
 ```
 
 ## Commands
@@ -71,15 +52,13 @@ require("colorscheme-sync").setup({ ... })
 ```lua
 local csync = require("colorscheme-sync")
 
-csync.apply("catppuccin-mocha")       -- Apply a theme by key
-csync.toggle_background()             -- Toggle dark/light
-csync.set_background_mode("light")    -- Set specific mode
-csync.set_transparency(true)          -- Enable transparency
-csync.is_transparent()                -- Query transparency state
-csync.current_theme()                 -- Get current resolved theme
-csync.theme_profile("catppuccin-mocha") -- Get sync profile
-csync.lualine_theme()                 -- Get lualine theme name
-csync.select()                        -- Open picker
+csync.apply("tokyonight")          -- Apply any colorscheme
+csync.toggle_background()          -- Toggle dark/light
+csync.set_background_mode("light") -- Set specific mode
+csync.set_transparency(true)       -- Enable transparency
+csync.is_transparent()             -- Query transparency state
+csync.current_theme()              -- Get current resolved theme
+csync.select()                     -- Open picker
 ```
 
 ## Configuration
@@ -87,43 +66,55 @@ csync.select()                        -- Open picker
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `default` | `string` | `"habamax"` | Fallback colorscheme key |
-| `themes` | `table[]` | `{}` | Theme definitions |
-| `aliases` | `table` | `{}` | Alias → key mappings |
 | `transparent_groups` | `string[]` | (common groups) | HL groups to clear bg |
-| `transparency_default` | `boolean` | `true` | Default transparency state |
+| `transparency_default` | `boolean` | `false` | Default transparency state |
 | `state_file` | `string` | `stdpath("state")/colorscheme.json` | Persistence path |
-| `system_sync` | `boolean` | `true` | Auto-detect system dark/light |
+| `system_sync` | `boolean` | `false` | Auto-detect system dark/light |
 | `system_poll_ms` | `number` | `8000` | Poll interval for system mode |
-| `sync_profiles` | `table` | `{}` | Per-theme sync tool config |
-| `sync_tools` | `function[]` | `{}` | Sync tool callbacks |
-| `load_plugin` | `function` | `nil` | Plugin loader callback |
+| `sync_profiles` | `table` | `{}` | Per-theme overrides for tool colors |
+| `sync_tools` | `function[]` | all built-in | Sync tool callbacks |
 | `on_change` | `function` | `nil` | Post-change hook |
 
-## Theme Definition
+### sync_profiles (optional overrides)
+
+The plugin extracts colors automatically from highlight groups. Use `sync_profiles` only when you need to override specific colors for a theme:
 
 ```lua
-{
-  key = "catppuccin-mocha",      -- Unique identifier
-  label = "Catppuccin Mocha",    -- Display name
-  scheme = "catppuccin",         -- vim colorscheme name
-  plugin = "catppuccin",         -- Plugin name (for family grouping)
-  opts = {                       -- Theme-specific options
-    flavour = "mocha",
-    background = "dark",         -- "dark" or "light"
+sync_profiles = {
+  ["catppuccin-mocha"] = {
+    terminal = { background = "#1e1e2e", foreground = "#cdd6f4" },
+    accent = "#89b4fa",
   },
-  fixed_background = false,      -- Block background toggle
-}
+},
 ```
+
+### sync_tools
+
+By default, all built-in tools are synced. To sync only specific tools:
+
+```lua
+local tools = require("colorscheme-sync.tools")
+sync_tools = { tools.tmux, tools.delta, tools.iterm2 }
+```
+
+## How It Works
+
+1. **Palette extraction**: Reads `Normal`, `Keyword`, `Comment`, `Visual`, `Diagnostic*` highlight groups to derive `bg`, `fg`, `accent`, `border`, `selection`, `warn`, `error`
+2. **Tmux sync**: Sets `status-style`, `status-left`, `status-right` (with zoom indicator `[Z]`), `window-status-current-format` (accent background for active window), pane borders, and message style — all from the palette
+3. **Persistence**: Saves theme key and transparency state to disk, restores on next startup
+4. **Initial sync**: Colors are applied to external tools immediately on Neovim startup
 
 ## Custom Sync Tools
 
 ```lua
 local function my_custom_sync(ctx)
-  -- ctx.theme = resolved theme table
-  -- ctx.profile = sync_profiles[theme.key] or {}
-  -- ctx.config = full plugin config
+  -- ctx.theme   = resolved theme table (key, scheme, opts)
+  -- ctx.profile = sync_profiles[theme.key] or auto-derived palette
+  -- ctx.config  = full plugin config
   local profile = ctx.profile
-  -- Do your sync logic here
+  local bg = profile.terminal.background
+  local fg = profile.terminal.foreground
+  -- Apply to your tool
 end
 
 require("colorscheme-sync").setup({

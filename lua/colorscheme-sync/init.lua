@@ -16,7 +16,7 @@ function M.setup(opts)
 
   catalog.build_map(cfg.themes)
 
-  local persisted = state.load(cfg.state_file, cfg.aliases, catalog.theme_map())
+  local persisted = state.load(cfg.state_file)
   if persisted and persisted.key then
     cfg.default = persisted.key
     config.set_default(persisted.key)
@@ -41,6 +41,15 @@ function M.setup(opts)
   require("colorscheme-sync.popups").setup()
   require("colorscheme-sync.integrations.avante").setup()
 
+  -- Initial sync: apply tmux + other tool colors immediately on startup.
+  -- The ColorScheme autocmd only fires on theme *changes*, not the initial load.
+  vim.schedule(function()
+    if M._initialized then
+      local item = M.current_theme()
+      sync.force(item)
+    end
+  end)
+
   M._initialized = true
 end
 
@@ -55,8 +64,13 @@ function M._setup_autocmds()
     group = group,
     callback = function()
       if vim.g._csync_applying or vim.g._csync_vim_leaving then return end
+      local scheme = vim.g.colors_name or cfg.default
+      local item = catalog.resolve_any(scheme)
+      vim.g.pure_colorscheme = item.key
+      local transparent = transparency.is_enabled()
+      state.persist(cfg.state_file, item.key, transparent)
       transparency.apply(cfg.transparent_groups)
-      sync.request(M.current_theme())
+      sync.request(item)
     end,
   })
 
@@ -99,8 +113,9 @@ function M._setup_commands()
   end, {
     nargs = "?",
     desc = "Switch colorscheme",
-    complete = function()
-      return vim.tbl_map(function(item) return item.key end, config.get().themes)
+    complete = function(_, line)
+      local arg = line:match("^%s*ColorScheme%s+(.+)$") or ""
+      return vim.fn.getcompletion(arg, "color") or {}
     end,
     force = true,
   })
@@ -131,7 +146,7 @@ function M._setup_commands()
 end
 
 function M.current_theme(theme_key)
-  return catalog.resolve(theme_key or vim.g.pure_colorscheme or vim.g.colors_name or config.get().default)
+  return catalog.resolve_any(theme_key or vim.g.pure_colorscheme or vim.g.colors_name or config.get().default)
 end
 
 function M.apply(theme, opts)
@@ -139,7 +154,7 @@ function M.apply(theme, opts)
 end
 
 function M.select()
-  local items = catalog.options()
+  local items = vim.fn.getcompletion("", "color") or {}
   local picker_ok, picker = pcall(require, "colorscheme-sync.picker")
   if picker_ok then
     picker.select(items, function(item)
@@ -148,7 +163,6 @@ function M.select()
   else
     vim.ui.select(items, {
       prompt = "Colorscheme",
-      format_item = function(item) return item.label end,
     }, function(item)
       if item then M.apply(item) end
     end)
@@ -191,7 +205,7 @@ end
 function M.sync_with_system(opts)
   return system_bg.sync(opts, {
     default = config.get().default,
-    resolve = catalog.resolve,
+    resolve = catalog.resolve_any,
     set_background_mode = M.set_background_mode,
   })
 end

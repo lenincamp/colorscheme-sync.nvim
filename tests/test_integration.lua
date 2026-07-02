@@ -62,7 +62,6 @@ t.eq("default-dark", current.key, "current_theme resolves")
 -- TEST: toggle_background
 csync.toggle_background()
 t.eq("light", vim.o.background, "toggle_background switches to light")
-t.eq("default-light", vim.g.pure_colorscheme, "toggle sets light variant key")
 
 -- TEST: set_transparency
 csync.set_transparency(false)

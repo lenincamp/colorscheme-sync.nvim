@@ -11,9 +11,9 @@ vim.api.nvim_set_hl(0, "Visual", { bg = "#313244" })
 vim.api.nvim_set_hl(0, "Keyword", { fg = "#cba6f7" })
 
 -- TEST: float/pmenu groups are NOT in transparent_groups (popups.lua owns them)
-local catalog = require("colorscheme-sync.presets.catalog")
+local config = require("colorscheme-sync.config")
 local stripped = {}
-for _, g in ipairs(catalog.transparent_groups) do
+for _, g in ipairs(config.defaults().transparent_groups) do
   stripped[g] = true
 end
 for _, g in ipairs({ "NormalFloat", "FloatBorder", "FloatTitle", "Pmenu", "PmenuBorder" }) do

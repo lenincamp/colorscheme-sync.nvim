@@ -6,11 +6,11 @@ local config = require("colorscheme-sync.config")
 
 -- TEST: defaults returns valid structure
 local defaults = config.defaults()
-t.eq("catppuccin-mocha", defaults.default, "defaults has catppuccin-mocha as default")
+t.eq("habamax", defaults.default, "defaults has habamax as default")
 t.ok(type(defaults.themes) == "table", "defaults has themes table")
 t.ok(type(defaults.aliases) == "table", "defaults has aliases table")
 t.ok(type(defaults.transparent_groups) == "table", "defaults has transparent_groups")
-t.eq(true, defaults.transparency_default, "defaults transparency_default is true")
+t.eq(false, defaults.transparency_default, "defaults transparency_default is false")
 t.ok(defaults.state_file:find("colorscheme.json", 1, true), "defaults state_file ends in colorscheme.json")
 t.eq(true, defaults.system_sync, "defaults system_sync is true")
 t.eq(8000, defaults.system_poll_ms, "defaults system_poll_ms is 8000")
@@ -30,14 +30,14 @@ t.eq("gruvbox-hard", config.get().default, "set_default updates default")
 -- TEST: set resets to defaults when called again
 config.set({})
 local fresh = config.get()
-t.eq("catppuccin-mocha", fresh.default, "set with empty opts resets to defaults")
+t.eq("habamax", fresh.default, "set with empty opts resets to defaults")
 
 -- TEST: deep extend does not mutate defaults
 config.set({ themes = { { key = "test", label = "Test", scheme = "test" } } })
 local after = config.get()
 t.eq(1, #after.themes, "custom themes override")
 local defaults_after = config.defaults()
-t.eq(17, #defaults_after.themes, "defaults themes not mutated")
+t.eq(0, #defaults_after.themes, "defaults themes not mutated")
 
 local success = t.report()
 if not success then vim.cmd("cq!") end
