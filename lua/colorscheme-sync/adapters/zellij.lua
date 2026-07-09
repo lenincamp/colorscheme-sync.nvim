@@ -27,6 +27,8 @@ function M.sync(ctx)
   if type(content) ~= "string" then return end
 
   local updated = M.replace_theme(content, M.theme_for_mode(mode))
+  -- Strip trailing blank lines to prevent file growth
+  updated = updated:gsub("\n+$", "\n")
   pcall(common.write_text_file_if_changed, path, updated)
 end
 
